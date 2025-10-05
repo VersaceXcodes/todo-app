@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759702602539,
+  "operation": {
+    "id": "backend:specifications:asyncapi"
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/backend/asyncapi.yaml",
+      "type": "text",
+      "size": 6481,
+      "dependencies": false
+    }
+  ]
+}

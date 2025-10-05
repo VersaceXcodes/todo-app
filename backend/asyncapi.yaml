@@ -1,0 +1,252 @@
+asyncapi: 2.0.0
+info:
+  title: TodoMaster Realtime API
+  version: 1.0.0
+  description: This document describes the realtime events for TodoMaster using
+    AsyncAPI specification.
+servers:
+  - url: ws://localhost:3000
+    protocol: ws
+    description: Development server for realtime.websocket connections
+channels:
+  authenticated/user/{user_id}:
+    parameters:
+      user_id:
+        description: The ID of the user
+        schema:
+          type: string
+    description: Channel for events related to authenticated users.
+    publish:
+      operationId: userAuthenticated
+      message:
+        $ref: "#/components/messages/UserAuthenticatedMessage"
+    subscribe:
+      operationId: userProfileUpdated
+      message:
+        $ref: "#/components/messages/UserProfileUpdatedMessage"
+  tasks/updates/{user_id}:
+    parameters:
+      user_id:
+        description: The ID of the user
+        schema:
+          type: string
+    publish:
+      operationId: taskCreated
+      message:
+        $ref: "#/components/messages/TaskCreatedMessage"
+    subscribe:
+      operationId: taskUpdated
+      message:
+        $ref: "#/components/messages/TaskUpdatedMessage"
+  tasks/completion/{user_id}:
+    parameters:
+      user_id:
+        description: The ID of the user
+        schema:
+          type: string
+    publish:
+      operationId: taskCompleted
+      message:
+        $ref: "#/components/messages/TaskCompletedMessage"
+  lists/updates/{user_id}:
+    parameters:
+      user_id:
+        description: The ID of the user whose task lists are being updated
+        schema:
+          type: string
+    publish:
+      operationId: taskListCreated
+      message:
+        $ref: "#/components/messages/TaskListCreatedMessage"
+    subscribe:
+      operationId: taskListUpdated
+      message:
+        $ref: "#/components/messages/TaskListUpdatedMessage"
+  tags/updates/{user_id}:
+    parameters:
+      user_id:
+        description: The ID of the user whose tags are being updated
+        schema:
+          type: string
+    publish:
+      operationId: tagCreated
+      message:
+        $ref: "#/components/messages/TagCreatedMessage"
+    subscribe:
+      operationId: tagUpdated
+      message:
+        $ref: "#/components/messages/TagUpdatedMessage"
+  collaborations/invites:
+    publish:
+      operationId: taskCollaborationInviteSent
+      message:
+        $ref: "#/components/messages/TaskCollaborationInviteSentMessage"
+    subscribe:
+      operationId: taskCollaborationInviteReceived
+      message:
+        $ref: "#/components/messages/TaskCollaborationInviteReceivedMessage"
+  reminders/notifications/{user_id}:
+    parameters:
+      user_id:
+        description: The ID of the user
+        schema:
+          type: string
+    publish:
+      operationId: reminderNotification
+      message:
+        $ref: "#/components/messages/ReminderNotificationMessage"
+components:
+  messages:
+    UserAuthenticatedMessage:
+      name: UserAuthenticatedMessage
+      payload:
+        type: object
+        properties:
+          user_id:
+            type: string
+          auth_token:
+            type: string
+          authentication_status:
+            type: object
+            properties:
+              is_authenticated:
+                type: boolean
+              is_loading:
+                type: boolean
+          error_message:
+            type: string
+            nullable: true
+    UserProfileUpdatedMessage:
+      name: UserProfileUpdatedMessage
+      payload:
+        type: object
+        properties:
+          user_id:
+            type: string
+          email:
+            type: string
+          name:
+            type: string
+            nullable: true
+    TaskCreatedMessage:
+      name: TaskCreatedMessage
+      payload:
+        $ref: "#/components/schemas/Task"
+    TaskUpdatedMessage:
+      name: TaskUpdatedMessage
+      payload:
+        $ref: "#/components/schemas/Task"
+    TaskCompletedMessage:
+      name: TaskCompletedMessage
+      payload:
+        type: object
+        properties:
+          task_id:
+            type: string
+          user_id:
+            type: string
+          is_completed:
+            type: boolean
+    TaskListCreatedMessage:
+      name: TaskListCreatedMessage
+      payload:
+        $ref: "#/components/schemas/TaskList"
+    TaskListUpdatedMessage:
+      name: TaskListUpdatedMessage
+      payload:
+        $ref: "#/components/schemas/TaskList"
+    TagCreatedMessage:
+      name: TagCreatedMessage
+      payload:
+        $ref: "#/components/schemas/Tag"
+    TagUpdatedMessage:
+      name: TagUpdatedMessage
+      payload:
+        $ref: "#/components/schemas/Tag"
+    TaskCollaborationInviteSentMessage:
+      name: TaskCollaborationInviteSentMessage
+      payload:
+        type: object
+        properties:
+          task_id:
+            type: string
+          collaborator_email:
+            type: string
+    TaskCollaborationInviteReceivedMessage:
+      name: TaskCollaborationInviteReceivedMessage
+      payload:
+        type: object
+        properties:
+          task_id:
+            type: string
+          collaborator_email:
+            type: string
+    ReminderNotificationMessage:
+      name: ReminderNotificationMessage
+      payload:
+        type: object
+        properties:
+          reminder_id:
+            type: string
+          task_id:
+            type: string
+          remind_at:
+            type: string
+          method:
+            type: string
+  schemas:
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        password_hash:
+          type: string
+        name:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+        email_verified:
+          type: boolean
+    Task:
+      type: object
+      properties:
+        task_id:
+          type: string
+        user_id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        is_completed:
+          type: boolean
+        priority:
+          type: string
+        due_date:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+    TaskList:
+      type: object
+      properties:
+        list_id:
+          type: string
+        user_id:
+          type: string
+        name:
+          type: string
+    Tag:
+      type: object
+      properties:
+        tag_id:
+          type: string
+        user_id:
+          type: string
+        name:
+          type: string

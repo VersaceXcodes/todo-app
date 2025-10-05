@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759702622660,
+  "operation": {
+    "id": "backend:specifications:openapi"
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/backend/openapi.yaml",
+      "type": "text",
+      "size": 17589,
+      "dependencies": false
+    }
+  ]
+}

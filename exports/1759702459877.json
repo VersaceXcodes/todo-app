@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759702459877,
+  "operation": {
+    "id": "db:postgres"
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/backend/db.sql",
+      "type": "text",
+      "size": 4456,
+      "dependencies": false
+    }
+  ]
+}

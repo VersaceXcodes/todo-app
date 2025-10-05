@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759702532172,
+  "operation": {
+    "id": "db:schemas:zod"
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/backend/schema.ts",
+      "type": "text",
+      "size": 6449,
+      "dependencies": false
+    }
+  ]
+}

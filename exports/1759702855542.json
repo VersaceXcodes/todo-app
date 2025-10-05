@@ -1,0 +1,21 @@
+{
+  "timestamp": 1759702855542,
+  "operation": {
+    "id": "backend:tests:main"
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/backend/server.test.ts",
+      "type": "text",
+      "size": 6105,
+      "dependencies": false
+    },
+    {
+      "path": "/mnt/data/todo-app/backend/jest.config.ts",
+      "type": "text",
+      "size": 72,
+      "dependencies": false
+    }
+  ]
+}

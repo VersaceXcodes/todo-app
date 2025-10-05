@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759702922730,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_Dashboard",
+      "version": "latest"
+    }
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/vitereact/src/components/views/UV_Dashboard.tsx",
+      "type": "text",
+      "size": 5838,
+      "dependencies": false
+    }
+  ]
+}

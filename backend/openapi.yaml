@@ -1,0 +1,732 @@
+openapi: 3.0.0
+info:
+  title: TodoMaster API
+  description: API for managing tasks, lists, and collaboration for the TodoMaster app
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserInput"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_token:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/User"
+  /auth/login:
+    post:
+      summary: Login a user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_token:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/User"
+  /auth/password-recovery:
+    post:
+      summary: Initiate password recovery
+      operationId: recoverPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Password recovery initiated
+  /auth/logout:
+    post:
+      summary: Logout the current user
+      operationId: logoutUser
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Successful logout
+  /users/{user_id}:
+    get:
+      summary: Get user profile
+      operationId: getUserProfile
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /tasks:
+    get:
+      summary: List or search tasks
+      operationId: listTasks
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            default: created_at
+            enum:
+              - title
+              - created_at
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of tasks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      summary: Create a new task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskInput"
+      responses:
+        "201":
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+  /tasks/{task_id}:
+    get:
+      summary: Get task details
+      operationId: getTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Task details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    put:
+      summary: Update a task
+      operationId: updateTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskInput"
+      responses:
+        "200":
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      summary: Delete a task
+      operationId: deleteTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Task deleted successfully
+  /task-lists:
+    get:
+      summary: List or search task lists
+      operationId: listTaskLists
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            default: name
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            default: asc
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of task lists retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskList"
+    post:
+      summary: Create a new task list
+      operationId: createTaskList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskListInput"
+      responses:
+        "201":
+          description: Task list created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskList"
+  /task-lists/{list_id}:
+    get:
+      summary: Get task list details
+      operationId: getTaskList
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Task list details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskList"
+    put:
+      summary: Update a task list
+      operationId: updateTaskList
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskListInput"
+      responses:
+        "200":
+          description: Task list updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskList"
+    delete:
+      summary: Delete a task list
+      operationId: deleteTaskList
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Task list deleted successfully
+  /tags:
+    get:
+      summary: List or search tags
+      operationId: listTags
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            default: name
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            default: asc
+            enum:
+              - asc
+              - desc
+      responses:
+        "200":
+          description: List of tags retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+    post:
+      summary: Create a new tag
+      operationId: createTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTagInput"
+      responses:
+        "201":
+          description: Tag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+  /tags/{tag_id}:
+    delete:
+      summary: Delete a tag
+      operationId: deleteTag
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Tag deleted successfully
+  /task-tags:
+    post:
+      summary: Associate a tag with a task
+      operationId: assignTagToTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task_id:
+                  type: string
+                tag_id:
+                  type: string
+      responses:
+        "201":
+          description: Tag associated with task successfully
+  /task-tags/{task_id}/{tag_id}:
+    delete:
+      summary: Remove a tag from a task
+      operationId: removeTagFromTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Tag removed from task successfully
+  /reminders:
+    post:
+      summary: Create a reminder for a task
+      operationId: createReminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReminderInput"
+      responses:
+        "201":
+          description: Reminder created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+  /task-collaborations:
+    post:
+      summary: Collaborate on a task
+      operationId: collaborateOnTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskCollaborationInput"
+      responses:
+        "201":
+          description: Task collaboration initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCollaboration"
+  /task-comments:
+    post:
+      summary: Add a comment to a task
+      operationId: addCommentToTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskCommentInput"
+      responses:
+        "201":
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskComment"
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+          format: email
+        password_hash:
+          type: string
+        name:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        email_verified:
+          type: boolean
+    CreateUserInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password_hash:
+          type: string
+        name:
+          type: string
+          nullable: true
+    Task:
+      type: object
+      properties:
+        task_id:
+          type: string
+        user_id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        is_completed:
+          type: boolean
+        priority:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    CreateTaskInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        is_completed:
+          type: boolean
+          default: false
+        priority:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+          default: medium
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+    UpdateTaskInput:
+      type: object
+      properties:
+        task_id:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        is_completed:
+          type: boolean
+          nullable: true
+        priority:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+          nullable: true
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+    TaskList:
+      type: object
+      properties:
+        list_id:
+          type: string
+        user_id:
+          type: string
+        name:
+          type: string
+    CreateTaskListInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        name:
+          type: string
+    UpdateTaskListInput:
+      type: object
+      properties:
+        list_id:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+    Tag:
+      type: object
+      properties:
+        tag_id:
+          type: string
+        user_id:
+          type: string
+        name:
+          type: string
+    CreateTagInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        name:
+          type: string
+    Reminder:
+      type: object
+      properties:
+        reminder_id:
+          type: string
+        task_id:
+          type: string
+        remind_at:
+          type: string
+          format: date-time
+        method:
+          type: string
+          enum:
+            - email
+            - push
+    CreateReminderInput:
+      type: object
+      properties:
+        task_id:
+          type: string
+        remind_at:
+          type: string
+          format: date-time
+        method:
+          type: string
+          enum:
+            - email
+            - push
+    TaskCollaboration:
+      type: object
+      properties:
+        task_id:
+          type: string
+        collaborator_email:
+          type: string
+          format: email
+    CreateTaskCollaborationInput:
+      type: object
+      properties:
+        task_id:
+          type: string
+        collaborator_email:
+          type: string
+          format: email
+    TaskComment:
+      type: object
+      properties:
+        comment_id:
+          type: string
+        task_id:
+          type: string
+        user_id:
+          type: string
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    CreateTaskCommentInput:
+      type: object
+      properties:
+        task_id:
+          type: string
+        user_id:
+          type: string
+        content:
+          type: string
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT

@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759702802092,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/backend/.env",
+      "type": "text",
+      "size": 245,
+      "dependencies": false
+    }
+  ]
+}

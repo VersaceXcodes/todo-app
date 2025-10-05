@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759702923089,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_TaskDetails",
+      "version": "latest"
+    }
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/vitereact/src/components/views/UV_TaskDetails.tsx",
+      "type": "text",
+      "size": 3037,
+      "dependencies": false
+    }
+  ]
+}

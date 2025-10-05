@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759702893992,
+  "operation": {
+    "id": "webapp:react:root",
+    "refs": {
+      "id": "app",
+      "version": "1759702867213"
+    }
+  },
+  "projectId": "todo-app",
+  "files": [
+    {
+      "path": "/mnt/data/todo-app/vitereact/src/App.tsx",
+      "type": "text",
+      "size": 4232,
+      "dependencies": false
+    }
+  ]
+}
