@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { CheckCircle, Users, Zap, Shield, ArrowRight, Star } from 'lucide-react';
+import { CheckCircle, Users, Zap, Shield, ArrowRight, Star, Target, Clock, TrendingUp, Award, Globe, Smartphone } from 'lucide-react';
 
 const UV_Landing: React.FC = () => {
   const isAuthenticated = useAppStore(
@@ -14,24 +14,40 @@ const UV_Landing: React.FC = () => {
 
   const features = [
     {
-      icon: <CheckCircle className="w-8 h-8 text-blue-600" />,
+      icon: <CheckCircle className="w-10 h-10 text-blue-600" />,
       title: "Smart Task Management",
-      description: "Organize your tasks with intelligent categorization and priority levels."
+      description: "AI-powered task categorization with intelligent priority suggestions and automated scheduling.",
+      highlight: "30% faster task completion"
     },
     {
-      icon: <Users className="w-8 h-8 text-green-600" />,
-      title: "Team Collaboration",
-      description: "Work seamlessly with your team through real-time updates and shared workspaces."
+      icon: <Users className="w-10 h-10 text-green-600" />,
+      title: "Real-time Collaboration",
+      description: "Seamless team coordination with live updates, instant notifications, and shared workspaces.",
+      highlight: "Teams report 40% better sync"
     },
     {
-      icon: <Zap className="w-8 h-8 text-yellow-600" />,
-      title: "Lightning Fast",
-      description: "Experience blazing-fast performance with our optimized architecture."
+      icon: <Zap className="w-10 h-10 text-yellow-600" />,
+      title: "Lightning Performance",
+      description: "Blazing-fast interface with offline support and instant sync across all your devices.",
+      highlight: "<100ms response time"
     },
     {
-      icon: <Shield className="w-8 h-8 text-purple-600" />,
-      title: "Secure & Private",
-      description: "Your data is protected with enterprise-grade security and encryption."
+      icon: <Shield className="w-10 h-10 text-purple-600" />,
+      title: "Enterprise Security",
+      description: "Bank-level encryption, SOC 2 compliance, and advanced access controls for your data.",
+      highlight: "99.9% uptime guarantee"
+    },
+    {
+      icon: <Target className="w-10 h-10 text-red-600" />,
+      title: "Goal Tracking",
+      description: "Set and track objectives with visual progress indicators and milestone celebrations.",
+      highlight: "Achieve 65% more goals"
+    },
+    {
+      icon: <Smartphone className="w-10 h-10 text-indigo-600" />,
+      title: "Mobile First",
+      description: "Native mobile apps with full functionality, perfect for productivity on the go.",
+      highlight: "Available on all platforms"
     }
   ];
 
