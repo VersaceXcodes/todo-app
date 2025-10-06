@@ -3,7 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import { searchTaskInputSchema } from '@/DB/zodschemas.ts';
+
 
 interface Task {
   task_id: string;
@@ -28,7 +28,9 @@ const UV_SearchResults: React.FC = () => {
     return data.results;
   };
 
-  const { data: tasks, isLoading, isError } = useQuery(['searchTasks', query], () => searchTasks(query), {
+  const { data: tasks, isLoading, isError } = useQuery({
+    queryKey: ['searchTasks', query],
+    queryFn: () => searchTasks(query),
     enabled: !!query,
     staleTime: 60000,
     retry: 1,

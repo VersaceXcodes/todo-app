@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '@/store/main';
@@ -39,12 +39,16 @@ const UV_Dashboard: React.FC = () => {
   };
 
   // useQuery hooks to fetch data
-  const { data: taskLists, isLoading: isTaskListsLoading, error: taskListsError } = useQuery(['taskLists', currentUser?.user_id], fetchTaskLists, {
+  const { data: taskLists = [], isLoading: isTaskListsLoading, error: taskListsError } = useQuery({
+    queryKey: ['taskLists', currentUser?.user_id],
+    queryFn: fetchTaskLists,
     enabled: !!currentUser?.user_id,
     staleTime: 60000,
   });
 
-  const { data: tasks, isLoading: isTasksLoading, error: tasksError } = useQuery(['tasks', currentUser?.user_id], fetchTasks, {
+  const { data: tasks = [], isLoading: isTasksLoading, error: tasksError } = useQuery({
+    queryKey: ['tasks', currentUser?.user_id],
+    queryFn: fetchTasks,
     enabled: !!currentUser?.user_id,
     staleTime: 60000,
   });
@@ -96,7 +100,7 @@ const UV_Dashboard: React.FC = () => {
                 </div>
               ) : (
                 <div>
-                  {taskLists?.length === 0 && tasks?.length === 0 ? (
+                  {taskLists.length === 0 && tasks.length === 0 ? (
                     <div className="text-center">
                       <span className="text-gray-600">No tasks found. Start by adding some!</span>
                       <Link to="/tasks/new" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
@@ -107,13 +111,13 @@ const UV_Dashboard: React.FC = () => {
                     <div>
                       <h3 className="text-lg font-medium text-gray-900">Your Task Lists</h3>
                       <ul className="mt-4 space-y-6">
-                        {taskLists?.map((list: { list_id: string, name: string }) => (
+                        {taskLists.map((list: { list_id: string, name: string }) => (
                           <li key={list.list_id} className="bg-white shadow overflow-hidden rounded-lg">
                             <div className="px-4 py-5 sm:px-6">
                               <h4 className="text-lg font-medium text-gray-900">{list.name}</h4>
                             </div>
                             <ul className="divide-y divide-gray-200">
-                              {tasks?.filter((task: { task_id: string, title: string, list_id: string, is_completed: boolean }) => task.list_id === list.list_id).map((task) => (
+                              {tasks.filter((task: { task_id: string, title: string, list_id: string, is_completed: boolean }) => task.list_id === list.list_id).map((task) => (
                                 <li key={task.task_id} className="px-4 py-4 sm:px-6 flex justify-between items-center">
                                   <div>
                                     <p className="text-sm font-medium text-gray-900">{task.title}</p>

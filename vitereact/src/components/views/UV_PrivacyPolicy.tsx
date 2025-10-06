@@ -1,17 +1,17 @@
 import React from 'react';
-import { useLazyQuery } from '@tanstack/react-query';
-import { useAppStore } from '@/store/main';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
 const UV_PrivacyPolicy: React.FC = () => {
-  const isAuthenticated = useAppStore(state => state.authentication_state.authentication_status.is_authenticated);
 
   const fetchPrivacyPolicy = async () => {
     // Placeholder for API call to fetch privacy policy text
     return Promise.resolve("This is the privacy policy text. Replace this with actual content from your API.");
   };
 
-  const { data: privacyPolicyText, isLoading } = useLazyQuery('fetchPrivacyPolicy', fetchPrivacyPolicy, {
+  const { data: privacyPolicyText, isLoading } = useQuery({
+    queryKey: ['fetchPrivacyPolicy'],
+    queryFn: fetchPrivacyPolicy,
     staleTime: 60000,
     refetchOnWindowFocus: false,
     retry: 1,

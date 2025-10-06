@@ -4,12 +4,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
 
-interface Params {
-  task_id: string;
-}
-
 const UV_TaskEdit: React.FC = () => {
-  const { task_id } = useParams<Params>();
+  const { task_id } = useParams<{ task_id: string }>();
   const navigate = useNavigate();
   
   const authToken = useAppStore(state => state.authentication_state.auth_token);
@@ -19,9 +15,9 @@ const UV_TaskEdit: React.FC = () => {
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [dueDate, setDueDate] = useState<string | null>(null);
 
-  const { data: taskData, isLoading: isLoadingTask } = useQuery(
-    ['task', task_id],
-    async () => {
+  const { data: taskData } = useQuery({
+    queryKey: ['task', task_id],
+    queryFn: async () => {
       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/tasks/${task_id}`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -29,13 +25,11 @@ const UV_TaskEdit: React.FC = () => {
       });
       return response.data;
     },
-    {
-      enabled: !!task_id, // only run the query if task_id is available
-    }
-  );
+    enabled: !!task_id,
+  });
 
-  const updateTaskMutation = useMutation(
-    async () => {
+  const updateTaskMutation = useMutation({
+    mutationFn: async () => {
       const response = await axios.put(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/tasks/${task_id}`, {
         title,
         description,
@@ -48,16 +42,13 @@ const UV_TaskEdit: React.FC = () => {
       });
       return response.data;
     },
-    {
-      onSuccess: () => {
-        // Navigate back to task details upon successful update
-        navigate(`/tasks/${task_id}`);
-      },
-      onError: (error: any) => {
-        console.error("Task update failed:", error);
-      },
-    }
-  );
+    onSuccess: () => {
+      navigate(`/tasks/${task_id}`);
+    },
+    onError: (error: any) => {
+      console.error("Task update failed:", error);
+    },
+  });
 
   useEffect(() => {
     if (taskData) {
@@ -145,9 +136,9 @@ const UV_TaskEdit: React.FC = () => {
               </Link>
               <button
                 type="submit"
-                disabled={updateTaskMutation.isLoading}
+                disabled={updateTaskMutation.isPending}
                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                {updateTaskMutation.isLoading ? 'Saving...' : 'Save Changes'}
+                {updateTaskMutation.isPending ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>

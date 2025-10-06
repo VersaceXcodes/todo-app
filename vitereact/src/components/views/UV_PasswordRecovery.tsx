@@ -10,8 +10,8 @@ const UV_PasswordRecovery: React.FC = () => {
   const clearAuthError = useAppStore((state) => state.clear_auth_error);
   const errorMessage = useAppStore((state) => state.authentication_state.error_message);
 
-  const mutation = useMutation(
-    async (email: string) => {
+  const mutation = useMutation({
+    mutationFn: async (email: string) => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/password-recovery`,
         { email },
@@ -19,23 +19,21 @@ const UV_PasswordRecovery: React.FC = () => {
       );
       return response.data;
     },
-    {
-      onSuccess: () => {
-        setMessage('Password recovery email sent successfully.');
-        setEmail('');
-      },
-      onError: (error: any) => {
-        console.error('Recovery error:', error);
-        const errorMessage = error.response?.data?.message || 'Password recovery failed';
-        setMessage(errorMessage);
-      },
-    }
-  );
+    onSuccess: () => {
+      setMessage('Password recovery email sent successfully.');
+      setEmail('');
+    },
+    onError: (error: any) => {
+      console.error('Recovery error:', error);
+      const errorMessage = error.response?.data?.message || 'Password recovery failed';
+      setMessage(errorMessage);
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     clearAuthError();
-    if (!mutation.isLoading) {
+    if (!mutation.isPending) {
       mutation.mutate(email);
     }
   };
@@ -79,10 +77,10 @@ const UV_PasswordRecovery: React.FC = () => {
             <div>
               <button
                 type="submit"
-                disabled={mutation.isLoading}
+                disabled={mutation.isPending}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {mutation.isLoading ? (
+                {mutation.isPending ? (
                   <span className="flex items-center">
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

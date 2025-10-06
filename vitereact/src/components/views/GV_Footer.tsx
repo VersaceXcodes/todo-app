@@ -1,10 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAppStore } from '@/store/main';
 
 const GV_Footer: React.FC = () => {
-  // Access user's state - though not directly used, ensures compliance with shared implementation requirements
-  const currentUser = useAppStore(state => state.authentication_state.current_user);
 
   return (
     <>

@@ -71,7 +71,7 @@ export const useAppStore = create<AppState>()(
 
           const { user, auth_token } = response.data;
 
-          set((state) => ({
+          set({
             authentication_state: {
               current_user: user,
               auth_token,
@@ -81,7 +81,7 @@ export const useAppStore = create<AppState>()(
               },
               error_message: null,
             },
-          }));
+          });
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || 'Login failed';
 
@@ -101,7 +101,7 @@ export const useAppStore = create<AppState>()(
       },
 
       logout_user: () => {
-        set((state) => ({
+        set({
           authentication_state: {
             current_user: null,
             auth_token: null,
@@ -111,7 +111,7 @@ export const useAppStore = create<AppState>()(
             },
             error_message: null,
           },
-        }));
+        });
       },
 
       register_user: async (email: string, password: string, name?: string) => {
@@ -162,7 +162,7 @@ export const useAppStore = create<AppState>()(
 
           const { user } = response.data;
 
-          set((state) => ({
+          set({
             authentication_state: {
               current_user: user,
               auth_token: token,
@@ -172,9 +172,9 @@ export const useAppStore = create<AppState>()(
               },
               error_message: null,
             },
-          }));
+          });
         } catch {
-          set((state) => ({
+          set({
             authentication_state: {
               current_user: null,
               auth_token: null,
@@ -184,7 +184,7 @@ export const useAppStore = create<AppState>()(
               },
               error_message: null,
             },
-          }));
+          });
         }
       },
 

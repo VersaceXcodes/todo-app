@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { userSchema } from '@/DB/zodschemas';
+
+const contactSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  message: z.string().min(1, 'Message is required'),
+});
 
 const UV_Contact: React.FC = () => {
   // Local state for form management
@@ -14,11 +19,7 @@ const UV_Contact: React.FC = () => {
   const submitContactForm = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const contactSchema = z.object({
-      name: userSchema.shape.name,
-      email: userSchema.shape.email,
-      message: z.string().min(1),
-    });
+    // Use the imported contactSchema for validation
 
     try {
       // Validate form inputs

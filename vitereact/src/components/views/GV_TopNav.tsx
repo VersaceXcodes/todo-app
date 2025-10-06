@@ -31,7 +31,7 @@ const GV_TopNav: React.FC = () => {
     }));
   };
 
-  const { data: searchResults, refetch: performSearch } = useQuery({
+  const { refetch: performSearch } = useQuery({
     queryFn: handleSearch,
     queryKey: ['tasks', searchQuery],
     enabled: false, // Disable automatic fetching; only execute on user action
@@ -64,7 +64,7 @@ const GV_TopNav: React.FC = () => {
                   className="py-2 px-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
                 <button
-                  onClick={performSearch}
+                  onClick={() => { performSearch(); }}
                   className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-100 transition"
                 >
                   Search
