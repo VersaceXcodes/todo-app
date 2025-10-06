@@ -53,20 +53,34 @@ const UV_Landing: React.FC = () => {
 
   const testimonials = [
     {
-      quote: "TodoMaster transformed how our team manages projects. Productivity is up 40%!",
+      quote: "TodoMaster transformed how our team manages projects. Productivity is up 40% and we've never been more organized!",
       author: "Sarah Chen",
-      role: "Project Manager"
+      role: "Project Manager",
+      company: "TechCorp Inc."
     },
     {
-      quote: "The most intuitive task management app I've ever used. Highly recommended!",
+      quote: "The most intuitive task management app I've ever used. The AI suggestions are spot-on every time.",
       author: "Mike Rodriguez",
-      role: "Team Lead"
+      role: "Team Lead",
+      company: "StartupXYZ"
     },
     {
-      quote: "Finally, a tool that actually makes task management enjoyable and efficient.",
+      quote: "Finally, a tool that actually makes task management enjoyable. Our team adoption was instant.",
       author: "Emily Johnson",
-      role: "Operations Director"
+      role: "Operations Director",
+      company: "Enterprise Solutions"
     }
+  ];
+
+  const stats = [
+    { number: "50K+", label: "Active Teams" },
+    { number: "2M+", label: "Tasks Completed" },
+    { number: "99.9%", label: "Uptime" },
+    { number: "4.9/5", label: "User Rating" }
+  ];
+
+  const companies = [
+    "TechCorp", "StartupXYZ", "Enterprise Solutions", "InnovateCo", "GlobalTech", "FutureWorks"
   ];
 
   return (
