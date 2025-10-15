@@ -115,20 +115,43 @@ export const useAppStore = create<AppState>()(
       },
 
       register_user: async (email: string, password: string, name?: string) => {
+        set((state) => ({
+          authentication_state: {
+            ...state.authentication_state,
+            authentication_status: {
+              ...state.authentication_state.authentication_status,
+              is_loading: true,
+            },
+            error_message: null,
+          },
+        }));
+
         try {
           await axios.post(
             `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`,
-            { email, password, name },
+            { email, password, name: name || '' },
             { headers: { 'Content-Type': 'application/json' } }
           );
-          // Directly log in user after successful registration is omitted to maintain simplicity
-          // Additional action can be provided to handle post-registration login if needed
+
+          set((state) => ({
+            authentication_state: {
+              ...state.authentication_state,
+              authentication_status: {
+                ...state.authentication_state.authentication_status,
+                is_loading: false,
+              },
+            },
+          }));
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || 'Registration failed';
 
           set((state) => ({
             authentication_state: {
               ...state.authentication_state,
+              authentication_status: {
+                ...state.authentication_state.authentication_status,
+                is_loading: false,
+              },
               error_message: errorMessage,
             },
           }));

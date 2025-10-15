@@ -86,7 +86,7 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     // Get elements by their specific IDs to avoid ambiguity
     let emailInput = await screen.findByLabelText(/email address/i, { selector: 'input[id="email-address"]' });
     let passwordInput = screen.getByLabelText(/password/i, { selector: 'input[id="password"]' });
-    let passwordConfirmationInput = screen.getByTestId('password-confirmation');
+    const passwordConfirmationInput = screen.getByTestId('password-confirmation');
     let submitButton = await screen.findByRole('button', { name: /sign up/i });
 
     let user = userEvent.setup();
@@ -145,7 +145,7 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     // Get elements by their specific IDs to avoid ambiguity
     let emailInput = await screen.findByLabelText(/email address/i, { selector: 'input[id="email-address"]' });
     let passwordInput = screen.getByLabelText(/password/i, { selector: 'input[id="password"]' });
-    let passwordConfirmationInput = screen.getByTestId('password-confirmation');
+    const passwordConfirmationInput = screen.getByTestId('password-confirmation');
     let submitButton = await screen.findByRole('button', { name: /sign up/i });
 
     let user = userEvent.setup();
@@ -204,7 +204,7 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     // Get elements by their specific IDs to avoid ambiguity
     let emailInput = await screen.findByLabelText(/email address/i, { selector: 'input[id="email-address"]' });
     let passwordInput = screen.getByLabelText(/password/i, { selector: 'input[id="password"]' });
-    let passwordConfirmationInput = screen.getByTestId('password-confirmation');
+    const passwordConfirmationInput = screen.getByTestId('password-confirmation');
     let submitButton = await screen.findByRole('button', { name: /sign up/i });
 
     let user = userEvent.setup();

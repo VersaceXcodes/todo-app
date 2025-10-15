@@ -3,11 +3,11 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
-import { Pool } from 'pg';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
+import { PGlite } from '@electric-sql/pglite';
 
 // Import Zod schemas
 import {
@@ -78,23 +78,66 @@ function createErrorResponse(
 }
 
 // Database configuration
-const { DATABASE_URL, PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT = 5432, JWT_SECRET = 'your-secret-key' } = process.env;
+const { JWT_SECRET = 'your-secret-key' } = process.env;
 
-const pool = new Pool(
-  DATABASE_URL
-    ? { 
-        connectionString: DATABASE_URL, 
-        ssl: { rejectUnauthorized: false } 
+// Use PGlite for in-memory database
+const db = new PGlite();
+
+// Create a query function that matches the pg.Pool interface
+const query = async (text, params?) => {
+  try {
+    const result = await db.query(text, params);
+    return {
+      rows: result.rows,
+      rowCount: result.rowCount
+    };
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
+  }
+};
+
+// Initialize database with schema when the server starts
+const initializeDatabase = async () => {
+  try {
+    // ESM workaround for __dirname
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    
+    // Check if users table exists and has data
+    try {
+      const result = await query('SELECT COUNT(*) as count FROM users');
+      if (result.rows[0].count > 0) {
+        console.log('Database already initialized with data, skipping initialization');
+        return;
       }
-    : {
-        host: PGHOST,
-        database: PGDATABASE,
-        user: PGUSER,
-        password: PGPASSWORD,
-        port: Number(PGPORT),
-        ssl: { rejectUnauthorized: false },
+    } catch (error) {
+      // Table doesn't exist, continue with initialization
+      console.log('Database not initialized, proceeding with initialization');
+    }
+    
+    // Read and split SQL commands
+    const dbInitCommands = fs
+      .readFileSync(path.join(__dirname, 'db.sql'), "utf-8")
+      .toString()
+      .split(/(?=CREATE TABLE |INSERT INTO)/);
+
+    // Execute each command
+    for (let cmd of dbInitCommands) {
+      if (cmd.trim()) {
+        await query(cmd);
       }
-);
+    }
+    
+    console.log('Database initialization completed successfully');
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    throw error;
+  }
+};
+
+// Initialize database immediately
+await initializeDatabase();
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -124,7 +167,7 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { user_id: string };
-    const result = await pool.query('SELECT user_id, email, name, created_at FROM users WHERE user_id = $1', [decoded.user_id]);
+    const result = await query('SELECT user_id, email, name, created_at FROM users WHERE user_id = $1', [decoded.user_id]);
     
     if (result.rows.length === 0) {
       return res.status(401).json(createErrorResponse('Invalid token - user not found', null, 'AUTH_USER_NOT_FOUND'));
@@ -179,7 +222,7 @@ app.post('/api/auth/register', async (req, res) => {
     const { email, password, name } = validatedData;
 
     // Check if user already exists
-    const existingUser = await pool.query('SELECT user_id FROM users WHERE email = $1', [email]);
+    const existingUser = await query('SELECT user_id FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
       return res.status(400).json(createErrorResponse('User with this email already exists', null, 'USER_ALREADY_EXISTS'));
     }
@@ -188,7 +231,7 @@ app.post('/api/auth/register', async (req, res) => {
     const user_id = uuidv4();
     const created_at = new Date().toISOString();
     
-    const result = await pool.query(
+    const result = await query(
       'INSERT INTO users (user_id, email, password_hash, name, created_at, email_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
       [user_id, email.toLowerCase().trim(), password, name, created_at, false]
     );
@@ -231,7 +274,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Find user and verify password (direct comparison for development)
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    const result = await query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
     if (result.rows.length === 0) {
       return res.status(400).json(createErrorResponse('Invalid email or password', null, 'INVALID_CREDENTIALS'));
     }
@@ -277,7 +320,7 @@ app.post('/api/auth/password-recovery', async (req, res) => {
     }
 
     // Check if user exists
-    const result = await pool.query('SELECT user_id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
+    const result = await query('SELECT user_id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
     if (result.rows.length === 0) {
       // Don't reveal if email exists or not for security
       return res.json({ message: 'Password recovery email sent if account exists' });
@@ -313,7 +356,7 @@ app.get('/api/users/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
-    const result = await pool.query('SELECT user_id, email, name, created_at, email_verified FROM users WHERE user_id = $1', [user_id]);
+    const result = await query('SELECT user_id, email, name, created_at, email_verified FROM users WHERE user_id = $1', [user_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('User not found', null, 'USER_NOT_FOUND'));
@@ -361,7 +404,7 @@ app.get('/api/tasks', async (req, res) => {
     sql += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(limit, offset);
 
-    const result = await pool.query(sql, params);
+    const result = await query(sql, params);
 
     // Transform date strings to proper format for response
     const tasks = result.rows.map(task => ({
@@ -390,7 +433,7 @@ app.post('/api/tasks', async (req, res) => {
     const created_at = new Date().toISOString();
     const due_date_str = due_date ? due_date.toISOString() : null;
 
-    const result = await pool.query(
+    const result = await query(
       'INSERT INTO tasks (task_id, user_id, title, description, is_completed, priority, due_date, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       [task_id, user_id, title, description, is_completed, priority, due_date_str, created_at]
     );
@@ -415,7 +458,7 @@ app.get('/api/tasks/:task_id', async (req, res) => {
   try {
     const { task_id } = req.params;
 
-    const result = await pool.query('SELECT * FROM tasks WHERE task_id = $1', [task_id]);
+    const result = await query('SELECT * FROM tasks WHERE task_id = $1', [task_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Task not found', null, 'TASK_NOT_FOUND'));
@@ -484,7 +527,7 @@ app.put('/api/tasks/:task_id', async (req, res) => {
     params.push(task_id);
     const sql = `UPDATE tasks SET ${updates.join(', ')} WHERE task_id = $${paramIndex} RETURNING *`;
 
-    const result = await pool.query(sql, params);
+    const result = await query(sql, params);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Task not found', null, 'TASK_NOT_FOUND'));
@@ -511,14 +554,14 @@ app.delete('/api/tasks/:task_id', async (req, res) => {
     const { task_id } = req.params;
 
     // Delete related records first
-    await pool.query('DELETE FROM task_tags WHERE task_id = $1', [task_id]);
-    await pool.query('DELETE FROM task_list_relations WHERE task_id = $1', [task_id]);
-    await pool.query('DELETE FROM task_collaborations WHERE task_id = $1', [task_id]);
-    await pool.query('DELETE FROM task_comments WHERE task_id = $1', [task_id]);
-    await pool.query('DELETE FROM reminders WHERE task_id = $1', [task_id]);
+    await query('DELETE FROM task_tags WHERE task_id = $1', [task_id]);
+    await query('DELETE FROM task_list_relations WHERE task_id = $1', [task_id]);
+    await query('DELETE FROM task_collaborations WHERE task_id = $1', [task_id]);
+    await query('DELETE FROM task_comments WHERE task_id = $1', [task_id]);
+    await query('DELETE FROM reminders WHERE task_id = $1', [task_id]);
     
     // Delete the task
-    const result = await pool.query('DELETE FROM tasks WHERE task_id = $1 RETURNING task_id', [task_id]);
+    const result = await query('DELETE FROM tasks WHERE task_id = $1 RETURNING task_id', [task_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Task not found', null, 'TASK_NOT_FOUND'));
@@ -562,7 +605,7 @@ app.get('/api/task-lists', async (req, res) => {
     sql += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(limit, offset);
 
-    const result = await pool.query(sql, params);
+    const result = await query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error('List task lists error:', error);
@@ -581,7 +624,7 @@ app.post('/api/task-lists', async (req, res) => {
 
     const list_id = uuidv4();
 
-    const result = await pool.query(
+    const result = await query(
       'INSERT INTO task_lists (list_id, user_id, name) VALUES ($1, $2, $3) RETURNING *',
       [list_id, user_id, name]
     );
@@ -601,7 +644,7 @@ app.get('/api/task-lists/:list_id', async (req, res) => {
   try {
     const { list_id } = req.params;
 
-    const result = await pool.query('SELECT * FROM task_lists WHERE list_id = $1', [list_id]);
+    const result = await query('SELECT * FROM task_lists WHERE list_id = $1', [list_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Task list not found', null, 'TASK_LIST_NOT_FOUND'));
@@ -640,7 +683,7 @@ app.put('/api/task-lists/:list_id', async (req, res) => {
     params.push(list_id);
     const sql = `UPDATE task_lists SET ${updates.join(', ')} WHERE list_id = $${paramIndex} RETURNING *`;
 
-    const result = await pool.query(sql, params);
+    const result = await query(sql, params);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Task list not found', null, 'TASK_LIST_NOT_FOUND'));
@@ -662,10 +705,10 @@ app.delete('/api/task-lists/:list_id', async (req, res) => {
     const { list_id } = req.params;
 
     // Delete task list relations first
-    await pool.query('DELETE FROM task_list_relations WHERE list_id = $1', [list_id]);
+    await query('DELETE FROM task_list_relations WHERE list_id = $1', [list_id]);
     
     // Delete the task list
-    const result = await pool.query('DELETE FROM task_lists WHERE list_id = $1 RETURNING list_id', [list_id]);
+    const result = await query('DELETE FROM task_lists WHERE list_id = $1 RETURNING list_id', [list_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Task list not found', null, 'TASK_LIST_NOT_FOUND'));
@@ -709,7 +752,7 @@ app.get('/api/tags', async (req, res) => {
     sql += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(limit, offset);
 
-    const result = await pool.query(sql, params);
+    const result = await query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error('List tags error:', error);
@@ -728,7 +771,7 @@ app.post('/api/tags', async (req, res) => {
 
     const tag_id = uuidv4();
 
-    const result = await pool.query(
+    const result = await query(
       'INSERT INTO tags (tag_id, user_id, name) VALUES ($1, $2, $3) RETURNING *',
       [tag_id, user_id, name]
     );
@@ -749,10 +792,10 @@ app.delete('/api/tags/:tag_id', async (req, res) => {
     const { tag_id } = req.params;
 
     // Delete task tag relations first
-    await pool.query('DELETE FROM task_tags WHERE tag_id = $1', [tag_id]);
+    await query('DELETE FROM task_tags WHERE tag_id = $1', [tag_id]);
     
     // Delete the tag
-    const result = await pool.query('DELETE FROM tags WHERE tag_id = $1 RETURNING tag_id', [tag_id]);
+    const result = await query('DELETE FROM tags WHERE tag_id = $1 RETURNING tag_id', [tag_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Tag not found', null, 'TAG_NOT_FOUND'));
@@ -780,12 +823,12 @@ app.post('/api/task-tags', async (req, res) => {
     }
 
     // Check if association already exists
-    const existing = await pool.query('SELECT * FROM task_tags WHERE task_id = $1 AND tag_id = $2', [task_id, tag_id]);
+    const existing = await query('SELECT * FROM task_tags WHERE task_id = $1 AND tag_id = $2', [task_id, tag_id]);
     if (existing.rows.length > 0) {
       return res.status(400).json(createErrorResponse('Tag already associated with task', null, 'ASSOCIATION_EXISTS'));
     }
 
-    await pool.query('INSERT INTO task_tags (task_id, tag_id) VALUES ($1, $2)', [task_id, tag_id]);
+    await query('INSERT INTO task_tags (task_id, tag_id) VALUES ($1, $2)', [task_id, tag_id]);
 
     res.status(201).json({ message: 'Tag associated with task successfully' });
   } catch (error) {
@@ -802,7 +845,7 @@ app.delete('/api/task-tags/:task_id/:tag_id', async (req, res) => {
   try {
     const { task_id, tag_id } = req.params;
 
-    const result = await pool.query('DELETE FROM task_tags WHERE task_id = $1 AND tag_id = $2 RETURNING *', [task_id, tag_id]);
+    const result = await query('DELETE FROM task_tags WHERE task_id = $1 AND tag_id = $2 RETURNING *', [task_id, tag_id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json(createErrorResponse('Tag association not found', null, 'ASSOCIATION_NOT_FOUND'));
@@ -828,13 +871,13 @@ app.post('/api/reminders', async (req, res) => {
 
     const reminder_id = uuidv4();
 
-    const result = await pool.query(
+    const result = await query(
       'INSERT INTO reminders (reminder_id, task_id, remind_at, method) VALUES ($1, $2, $3, $4) RETURNING *',
       [reminder_id, task_id, remind_at.toISOString(), method]
     );
 
     // Get task details for notification
-    const taskResult = await pool.query('SELECT title FROM tasks WHERE task_id = $1', [task_id]);
+    const taskResult = await query('SELECT title FROM tasks WHERE task_id = $1', [task_id]);
     const task_title = taskResult.rows[0]?.title || 'Untitled Task';
 
     // Schedule the reminder notification
@@ -868,12 +911,12 @@ app.post('/api/task-collaborations', async (req, res) => {
     const { task_id, collaborator_email } = validatedData;
 
     // Check if collaboration already exists
-    const existing = await pool.query('SELECT * FROM task_collaborations WHERE task_id = $1 AND collaborator_email = $2', [task_id, collaborator_email]);
+    const existing = await query('SELECT * FROM task_collaborations WHERE task_id = $1 AND collaborator_email = $2', [task_id, collaborator_email]);
     if (existing.rows.length > 0) {
       return res.status(400).json(createErrorResponse('Collaborator already added to task', null, 'COLLABORATION_EXISTS'));
     }
 
-    await pool.query('INSERT INTO task_collaborations (task_id, collaborator_email) VALUES ($1, $2)', [task_id, collaborator_email]);
+    await query('INSERT INTO task_collaborations (task_id, collaborator_email) VALUES ($1, $2)', [task_id, collaborator_email]);
 
     res.status(201).json({
       task_id,
@@ -900,7 +943,7 @@ app.post('/api/task-comments', async (req, res) => {
     const comment_id = uuidv4();
     const created_at = new Date().toISOString();
 
-    const result = await pool.query(
+    const result = await query(
       'INSERT INTO task_comments (comment_id, task_id, user_id, content, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [comment_id, task_id, user_id, content, created_at]
     );
