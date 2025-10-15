@@ -1,6 +1,6 @@
 import request from 'supertest';
-import { app, pool } from './server.ts'; // Import the Express app and database pool
-import { createTaskInputSchema } from './zodschemas';
+import { app, pool } from './server.js'; // Import the Express app and database pool
+import { createTaskInputSchema } from './schema.js';
 
 // Setup and teardown hooks for database testing
 beforeAll(async () => {
