@@ -12,7 +12,7 @@ export const userSchema = z.object({
 
 export const createUserInputSchema = z.object({
   email: z.string().email(),
-  password_hash: z.string(),
+  password: z.string(),
   name: z.string().nullable(),
 });
 

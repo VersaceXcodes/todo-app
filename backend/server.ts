@@ -176,7 +176,7 @@ Creates new user account with email and password, returns JWT token
 app.post('/api/auth/register', async (req, res) => {
   try {
     const validatedData = createUserInputSchema.parse(req.body);
-    const { email, password_hash: password, name } = validatedData;
+    const { email, password, name } = validatedData;
 
     // Check if user already exists
     const existingUser = await pool.query('SELECT user_id FROM users WHERE email = $1', [email]);
