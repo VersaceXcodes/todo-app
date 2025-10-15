@@ -57,9 +57,16 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     });
 
     const user = userEvent.setup();
+    await user.clear(emailInput);
     await user.type(emailInput, uniqueEmail);
+    await user.clear(passwordInput);
     await user.type(passwordInput, TEST_PASSWORD);
+    await user.clear(passwordConfirmationInput);
     await user.type(passwordConfirmationInput, TEST_PASSWORD);
+
+    // Button should enable once all fields are filled
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    await user.click(submitButton);
 
     // Button should enable once all fields are filled
     await waitFor(() => expect(submitButton).not.toBeDisabled());
@@ -77,7 +84,7 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     );
   }, 30000);
 
-  it('logs in successfully with valid credentials', async () => {
+it('logs in successfully with valid credentials', async () => {
     const uniqueEmail = `login${Date.now()}@example.com`;
     
     // First register the user
@@ -93,13 +100,26 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     await user.type(emailInput, uniqueEmail);
     await user.type(passwordInput, TEST_PASSWORD);
     await user.type(passwordConfirmationInput, TEST_PASSWORD);
+    
+    // Debug: Check the values before submitting
+    console.log('Email value:', emailInput.value);
+    console.log('Password value:', passwordInput.value);
+    console.log('Password confirmation value:', passwordConfirmationInput.value);
+    
+    // Check if passwords match before submitting
+    expect(passwordInput.value).toBe(passwordConfirmationInput.value);
+    
     await user.click(submitButton);
+    console.log('Form submitted');
 
     // Wait for registration to complete
     await waitFor(
       () => {
         const state = useAppStore.getState();
+        // After registration, user should not be automatically logged in based on the current implementation
         expect(state.authentication_state.authentication_status.is_authenticated).toBe(false);
+        // Add debug logging
+        console.log('Registration state:', state.authentication_state);
       },
       { timeout: 20000 }
     );
@@ -149,9 +169,9 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     let submitButton = await screen.findByRole('button', { name: /sign up/i });
 
     let user = userEvent.setup();
-    await user.type(emailInput, uniqueEmail);
-    await user.type(passwordInput, TEST_PASSWORD);
-    await user.type(passwordConfirmationInput, TEST_PASSWORD);
+    await user.type(emailInput, uniqueEmail, { initialSelectionStart: 0, initialSelectionEnd: emailInput.value.length });
+    await user.type(passwordInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordInput.value.length });
+    await user.type(passwordConfirmationInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordConfirmationInput.value.length });
     await user.click(submitButton);
 
     // Wait for registration to complete
@@ -208,9 +228,9 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
     let submitButton = await screen.findByRole('button', { name: /sign up/i });
 
     let user = userEvent.setup();
-    await user.type(emailInput, uniqueEmail);
-    await user.type(passwordInput, TEST_PASSWORD);
-    await user.type(passwordConfirmationInput, TEST_PASSWORD);
+    await user.type(emailInput, uniqueEmail, { initialSelectionStart: 0, initialSelectionEnd: emailInput.value.length });
+    await user.type(passwordInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordInput.value.length });
+    await user.type(passwordConfirmationInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordConfirmationInput.value.length });
     await user.click(submitButton);
 
     // Wait for registration to complete
