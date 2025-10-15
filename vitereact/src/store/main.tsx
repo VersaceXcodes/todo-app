@@ -138,6 +138,50 @@ export const useAppStore = create<AppState>()(
         }));
 
         try {
+          console.log('Making registration API call');
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`,
+            { email, password, name: name || '' },
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+          
+          console.log('Registration API call successful:', response.data);
+
+          set((state) => ({
+            authentication_state: {
+              ...state.authentication_state,
+              authentication_status: {
+                ...state.authentication_state.authentication_status,
+                is_loading: false,
+              },
+            },
+          }));
+          
+          console.log('Store updated after registration');
+        } catch (error: any) {
+          const errorMessage = error.response?.data?.message || 'Registration failed';
+          
+          console.log('Registration failed:', error);
+
+          set((state) => ({
+            authentication_state: {
+              ...state.authentication_state,
+              authentication_status: {
+                ...state.authentication_state.authentication_status,
+                is_loading: false,
+              },
+              error_message: errorMessage,
+            },
+          }));
+
+          throw new Error(errorMessage);
+        }
+      },
+            error_message: null,
+          },
+        }));
+
+        try {
           const response = await axios.post(
             `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`,
             { email, password, name: name || '' },

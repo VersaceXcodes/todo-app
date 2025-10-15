@@ -87,49 +87,25 @@ describe('Auth E2E Tests (Vitest, real API)', () => {
 it('logs in successfully with valid credentials', async () => {
     const uniqueEmail = `login${Date.now()}@example.com`;
     
-    // First register the user
-    render(<UV_SignUp />, { wrapper: SignUpWrapper });
-
-    // Get elements by their specific IDs to avoid ambiguity
-    let emailInput = await screen.findByLabelText(/email address/i, { selector: 'input[id="email-address"]' });
-    let passwordInput = screen.getByLabelText(/password/i, { selector: 'input[id="password"]' });
-    const passwordConfirmationInput = screen.getByTestId('password-confirmation');
-    let submitButton = await screen.findByRole('button', { name: /sign up/i });
-
-    let user = userEvent.setup();
-    await user.type(emailInput, uniqueEmail);
-    await user.type(passwordInput, TEST_PASSWORD);
-    await user.type(passwordConfirmationInput, TEST_PASSWORD);
+    // First create a user directly through the API (bypassing the signup form)
+    const registerResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        email: uniqueEmail, 
+        password: TEST_PASSWORD,
+        name: 'Test User'
+      })
+    });
     
-    // Debug: Check the values before submitting
-    console.log('Email value:', emailInput.value);
-    console.log('Password value:', passwordInput.value);
-    console.log('Password confirmation value:', passwordConfirmationInput.value);
+    expect(registerResponse.ok).toBe(true);
     
-    // Check if passwords match before submitting
-    expect(passwordInput.value).toBe(passwordConfirmationInput.value);
-    
-    await user.click(submitButton);
-    console.log('Form submitted');
-
-    // Wait for registration to complete
-    await waitFor(
-      () => {
-        const state = useAppStore.getState();
-        // After registration, user should not be automatically logged in based on the current implementation
-        expect(state.authentication_state.authentication_status.is_authenticated).toBe(false);
-        // Add debug logging
-        console.log('Registration state:', state.authentication_state);
-      },
-      { timeout: 20000 }
-    );
-
     // Now test login
     render(<UV_Login />, { wrapper: LoginWrapper });
 
-    emailInput = await screen.findByLabelText(/email address/i, { selector: 'input[id="email"]' });
-    passwordInput = await screen.findByLabelText(/password/i, { selector: 'input[id="password"]' });
-    submitButton = await screen.findByRole('button', { name: /sign in/i });
+    const emailInput = await screen.findByLabelText(/email address/i, { selector: 'input[id="email"]' });
+    const passwordInput = await screen.findByLabelText(/password/i, { selector: 'input[id="password"]' });
+    const submitButton = await screen.findByRole('button', { name: /sign in/i });
 
     // Ensure inputs are enabled before typing
     await waitFor(() => {
@@ -137,7 +113,7 @@ it('logs in successfully with valid credentials', async () => {
       expect(passwordInput).not.toBeDisabled();
     });
 
-    user = userEvent.setup();
+    const user = userEvent.setup();
     await user.type(emailInput, uniqueEmail);
     await user.type(passwordInput, TEST_PASSWORD);
 

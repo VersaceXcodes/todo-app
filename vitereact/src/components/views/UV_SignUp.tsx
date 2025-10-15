@@ -15,15 +15,19 @@ const UV_SignUp: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearAuthError();
+    console.log('Form submission started');
+    clearAuthError(); 
 
     if (password !== passwordConfirmation) {
+      console.log('Password mismatch');
       alert('Passwords do not match.');
       return;
     }
 
+    console.log('Passwords match, proceeding with registration');
     try {
       await registerUser(email, password, name);
+      console.log('Registration successful');
     } catch (error) {
       console.error('Registration error:', error);
     }
