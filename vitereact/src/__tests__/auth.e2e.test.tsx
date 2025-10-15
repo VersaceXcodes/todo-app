@@ -145,9 +145,9 @@ it('logs in successfully with valid credentials', async () => {
     let submitButton = await screen.findByRole('button', { name: /sign up/i });
 
     let user = userEvent.setup();
-    await user.type(emailInput, uniqueEmail, { initialSelectionStart: 0, initialSelectionEnd: emailInput.value.length });
-    await user.type(passwordInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordInput.value.length });
-    await user.type(passwordConfirmationInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordConfirmationInput.value.length });
+    await user.type(emailInput, uniqueEmail, { initialSelectionStart: 0, initialSelectionEnd: (emailInput as HTMLInputElement).value.length });
+    await user.type(passwordInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: (passwordInput as HTMLInputElement).value.length });
+    await user.type(passwordConfirmationInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: (passwordConfirmationInput as HTMLInputElement).value.length });
     await user.click(submitButton);
 
     // Wait for registration to complete
@@ -204,9 +204,9 @@ it('logs in successfully with valid credentials', async () => {
     let submitButton = await screen.findByRole('button', { name: /sign up/i });
 
     let user = userEvent.setup();
-    await user.type(emailInput, uniqueEmail, { initialSelectionStart: 0, initialSelectionEnd: emailInput.value.length });
-    await user.type(passwordInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordInput.value.length });
-    await user.type(passwordConfirmationInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: passwordConfirmationInput.value.length });
+    await user.type(emailInput, uniqueEmail, { initialSelectionStart: 0, initialSelectionEnd: (emailInput as HTMLInputElement).value.length });
+    await user.type(passwordInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: (passwordInput as HTMLInputElement).value.length });
+    await user.type(passwordConfirmationInput, TEST_PASSWORD, { initialSelectionStart: 0, initialSelectionEnd: (passwordConfirmationInput as HTMLInputElement).value.length });
     await user.click(submitButton);
 
     // Wait for registration to complete

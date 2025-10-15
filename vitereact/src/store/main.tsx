@@ -177,52 +177,6 @@ export const useAppStore = create<AppState>()(
           throw new Error(errorMessage);
         }
       },
-            error_message: null,
-          },
-        }));
-
-        try {
-          const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/register`,
-            { email, password, name: name || '' },
-            { headers: { 'Content-Type': 'application/json' } }
-          );
-          
-          // Debug logging
-          console.log('Registration response:', response.data);
-
-          set((state) => ({
-            authentication_state: {
-              ...state.authentication_state,
-              authentication_status: {
-                ...state.authentication_state.authentication_status,
-                is_loading: false,
-              },
-            },
-          }));
-          
-          // Debug logging
-          console.log('Store after registration:', get().authentication_state);
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.message || 'Registration failed';
-          
-          // Debug logging
-          console.log('Registration error:', error);
-
-          set((state) => ({
-            authentication_state: {
-              ...state.authentication_state,
-              authentication_status: {
-                ...state.authentication_state.authentication_status,
-                is_loading: false,
-              },
-              error_message: errorMessage,
-            },
-          }));
-
-          throw new Error(errorMessage);
-        }
-      },
 
       initialize_auth: async () => {
         const { authentication_state } = get();
