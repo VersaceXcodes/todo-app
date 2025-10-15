@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { CheckCircle, Users, Zap, Shield, ArrowRight, Star, Target, Clock, TrendingUp, Award, Globe, Smartphone } from 'lucide-react';
+import { CheckCircle, Users, Zap, Shield, ArrowRight, Star, Target, Smartphone } from 'lucide-react';
 
 const UV_Landing: React.FC = () => {
   const isAuthenticated = useAppStore(
@@ -72,16 +72,7 @@ const UV_Landing: React.FC = () => {
     }
   ];
 
-  const stats = [
-    { number: "50K+", label: "Active Teams" },
-    { number: "2M+", label: "Tasks Completed" },
-    { number: "99.9%", label: "Uptime" },
-    { number: "4.9/5", label: "User Rating" }
-  ];
-
-  const companies = [
-    "TechCorp", "StartupXYZ", "Enterprise Solutions", "InnovateCo", "GlobalTech", "FutureWorks"
-  ];
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100">
